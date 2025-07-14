@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <!-- Sun gradient -->
+    <radialGradient id="sunGradient" cx="50%" cy="30%" r="40%">
+      <stop offset="0%" style="stop-color:#FFF2B3"/>
+      <stop offset="30%" style="stop-color:#FFD93D"/>
+      <stop offset="60%" style="stop-color:#FF6B35"/>
+      <stop offset="100%" style="stop-color:#DC2626"/>
+    </radialGradient>
+    
+    <!-- Mountain gradient -->
+    <linearGradient id="mountainGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#93C5FD"/>
+      <stop offset="50%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#1E40AF"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100" height="100" fill="#F8FAFC"/>
+  
+  <!-- Sun rays -->
+  <g stroke="#374151" stroke-width="1.5" stroke-linecap="round">
+    <!-- Long rays -->
+    <line x1="50" y1="8" x2="50" y2="18"/>
+    <line x1="75" y1="15" x2="73" y2="24"/>
+    <line x1="90" y1="35" x2="81" y2="40"/>
+    <line x1="90" y1="55" x2="81" y2="50"/>
+    <line x1="75" y1="75" x2="73" y2="66"/>
+    <line x1="25" y1="75" x2="27" y2="66"/>
+    <line x1="10" y1="55" x2="19" y2="50"/>
+    <line x1="10" y1="35" x2="19" y2="40"/>
+    <line x1="25" y1="15" x2="27" y2="24"/>
+    
+    <!-- Short rays -->
+    <line x1="65" y1="12" x2="64" y2="19"/>
+    <line x1="82" y1="25" x2="77" y2="29"/>
+    <line x1="87" y1="45" x2="80" y2="47"/>
+    <line x1="82" y1="65" x2="77" y2="61"/>
+    <line x1="65" y1="78" x2="64" y2="71"/>
+    <line x1="35" y1="78" x2="36" y2="71"/>
+    <line x1="18" y1="65" x2="23" y2="61"/>
+    <line x1="13" y1="45" x2="20" y2="47"/>
+    <line x1="18" y1="25" x2="23" y2="29"/>
+    <line x1="35" y1="12" x2="36" y2="19"/>
+  </g>
+  
+  <!-- Sun -->
+  <circle cx="50" cy="40" r="15" fill="url(#sunGradient)" stroke="#374151" stroke-width="1.5"/>
+  
+  <!-- Mountains -->
+  <g stroke="#374151" stroke-width="1.5" stroke-linejoin="round" fill="url(#mountainGradient)">
+    <!-- Left mountain -->
+    <path d="M15 90 L35 60 L55 90 Z"/>
+    <!-- Center mountain -->
+    <path d="M35 90 L50 45 L65 90 Z"/>
+    <!-- Right mountain -->
+    <path d="M45 90 L65 60 L85 90 Z"/>
+  </g>
+  
+  <!-- Mountain snow caps -->
+  <g fill="white" stroke="#374151" stroke-width="1">
+    <path d="M45 55 L50 45 L55 55 Z"/>
+    <path d="M30 65 L35 60 L40 65 Z"/>
+    <path d="M60 65 L65 60 L70 65 Z"/>
+  </g>
+</svg>
