@@ -1,35 +1,130 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import service from '../api/request';
 import styles from './LoginPage.module.scss';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    account: '',
-    password: '',
-    inviteCode: ''
-  });
+  
+  // Component states as per specification
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [inviteCode, setInviteCode] = useState<string>('');
+  const [isInviteCodeDisabled, setIsInviteCodeDisabled] = useState<boolean>(true);
+  const [isCheckingStatus, setIsCheckingStatus] = useState<boolean>(false);
+  const [usernameError, setUsernameError] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string>('');
+  const [apiErrorMessage, setApiErrorMessage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const [showPassword, setShowPassword] = useState(false);
+  const debounceRef = useRef<number | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  // Debounce logic for username input
+  useEffect(() => {
+    if (username.trim()) {
+      // Clear existing timeout
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      // Set new timeout for 300ms
+      debounceRef.current = setTimeout(async () => {
+        setIsCheckingStatus(true);
+        try {
+          const response = await service.get('/api/users/check-status', {
+            params: { username }
+          });
+          
+          // API success: set invite code field state based on isRegistered
+          setIsInviteCodeDisabled(response.isRegistered);
+        } catch (error) {
+          // API failure: use tolerant strategy (enable invite code field)
+          setIsInviteCodeDisabled(false);
+          console.error('Check status API error:', error);
+        } finally {
+          setIsCheckingStatus(false);
+        }
+      }, 300);
+    } else {
+      // Reset to initial state when username is empty
+      setIsInviteCodeDisabled(true);
+    }
+
+    // Cleanup function
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [username]);
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
+  const handleInviteCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInviteCode(e.target.value);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login data:', formData);
     
-    // Simple validation
-    if (formData.account && formData.password) {
-      // Navigate to HomePage after successful login
-      navigate('/home');
-    } else {
-      alert('請填寫所有欄位');
+    // Prevent duplicate submissions
+    if (isLoading || isCheckingStatus) {
+      return;
+    }
+
+    // Clear all error messages
+    setUsernameError('');
+    setPasswordError('');
+    setApiErrorMessage('');
+
+    // Frontend validation
+    let hasError = false;
+    
+    if (!username.trim()) {
+      setUsernameError('請輸入帳號');
+      hasError = true;
+    }
+    
+    if (!password.trim()) {
+      setPasswordError('請輸入密碼');
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
+    // Start API request
+    setIsLoading(true);
+    
+    try {
+      const response = await service.post('/api/v1/auth/login-or-register', {
+        username,
+        password,
+        inviteCode: inviteCode || null
+      });
+
+      // Success: store token and redirect
+      if (response.access_token) {
+        // Store token in localStorage (you can modify this to use HttpOnly cookies if preferred)
+        localStorage.setItem('access_token', response.access_token);
+        
+        // Navigate to home page
+        navigate('/home');
+      }
+    } catch (error: any) {
+      // Failure: display API error message
+      const errorMessage = error?.response?.data?.message || error?.message || '登入失敗，請稍後再試';
+      setApiErrorMessage(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -52,13 +147,15 @@ const LoginPage: React.FC = () => {
               </label>
               <input
                 type="text"
-                name="account"
                 placeholder="請輸入您的帳號"
                 className="input input-bordered w-full h-12 sm:h-12 text-base"
-                value={formData.account}
-                onChange={handleInputChange}
-                required
+                value={username}
+                onChange={handleUsernameChange}
               />
+              {/* Username error message */}
+              {usernameError && (
+                <p className="text-error text-sm mt-1">{usernameError}</p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -69,12 +166,10 @@ const LoginPage: React.FC = () => {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  name="password"
                   placeholder="請輸入您的密碼"
                   className="input input-bordered w-full h-12 sm:h-12 pr-12 text-base"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
+                  value={password}
+                  onChange={handlePasswordChange}
                 />
                 <button
                   type="button"
@@ -95,6 +190,10 @@ const LoginPage: React.FC = () => {
                   )}
                 </button>
               </div>
+              {/* Password error message */}
+              {passwordError && (
+                <p className="text-error text-sm mt-1">{passwordError}</p>
+              )}
             </div>
 
             {/* Invite Code Field */}
@@ -104,21 +203,33 @@ const LoginPage: React.FC = () => {
               </label>
               <input
                 type="text"
-                name="inviteCode"
                 placeholder="請輸入邀請碼"
-                className="input input-bordered w-full h-12 sm:h-12 text-base"
-                value={formData.inviteCode}
-                onChange={handleInputChange}
+                className={`input input-bordered w-full h-12 sm:h-12 text-base ${isInviteCodeDisabled ? 'input-disabled bg-base-300' : ''}`}
+                value={inviteCode}
+                onChange={handleInviteCodeChange}
+                disabled={isInviteCodeDisabled}
               />
             </div>
+
+            {/* API Error Message */}
+            {apiErrorMessage && (
+              <div className="text-error text-sm text-center">
+                {apiErrorMessage}
+              </div>
+            )}
 
             {/* Login Button */}
             <div className="form-control mt-4 sm:mt-6">
               <button 
                 type="submit" 
                 className="btn btn-primary w-full h-12 sm:h-12 text-base sm:text-lg font-medium touch-manipulation"
+                disabled={isLoading}
               >
-                登入
+                {isLoading ? (
+                  <span className="loading loading-ring loading-md"></span>
+                ) : (
+                  '登入'
+                )}
               </button>
             </div>
           </form>

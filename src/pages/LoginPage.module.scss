@@ -1,18 +1,21 @@
-.homePageContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  text-align: center;
-  font-family: sans-serif;
+/* Custom styles for LoginPage component */
+/* Most styling is handled by daisyUI and Tailwind CSS classes */
+
+/* Additional responsive utilities if needed */
+@media (max-width: 640px) {
+  .mobileOptimized {
+    padding: 0.5rem;
+  }
 }
 
-.title {
-  font-size: 2.5rem;
+/* Custom disabled input styling */
+.disabledInput {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: var(--fallback-b3, oklch(var(--b3)/1));
 }
 
-.subtitle {
-  font-size: 1.2rem;
-  color: #666;
+/* Loading state for button */
+.loadingButton {
+  pointer-events: none;
 }
