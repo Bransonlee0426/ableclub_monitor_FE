@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import service from '../api/request';
+import { checkUserStatus, loginOrRegister } from '../api/auth';
 import styles from './LoginPage.module.scss';
 
 const LoginPage: React.FC = () => {
@@ -32,9 +32,7 @@ const LoginPage: React.FC = () => {
       debounceRef.current = setTimeout(async () => {
         setIsCheckingStatus(true);
         try {
-          const response = await service.get('/api/users/check-status', {
-            params: { username }
-          });
+          const response = await checkUserStatus({ username });
           
           // API success: set invite code field state based on isRegistered
           setIsInviteCodeDisabled(response.isRegistered);
@@ -105,16 +103,16 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const response = await service.post('/api/v1/auth/login-or-register', {
+      const response = await loginOrRegister({
         username,
         password,
         inviteCode: inviteCode || null
       });
 
       // Success: store token and redirect
-      if (response.access_token) {
+      if (response.success && response.token?.access_token) {
         // Store token in localStorage (you can modify this to use HttpOnly cookies if preferred)
-        localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('access_token', response.token.access_token);
         
         // Navigate to home page
         navigate('/home');
