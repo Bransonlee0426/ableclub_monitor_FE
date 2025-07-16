@@ -1,0 +1,53 @@
+# Deploy Frontend to Development Environment (Firebase Hosting)
+# Triggered when code is pushed or merged to 'dev' branch
+
+name: Deploy Frontend to Dev Environment
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+    types: [closed]
+
+jobs:
+  deploy-dev:
+    # Only run deployment when PR is merged or direct push to dev
+    if: github.event_name == 'push' || (github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the latest code from 'dev' branch
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # Step 3: Install all frontend dependencies
+      - name: Install Dependencies
+        run: npm ci
+
+      # Step 4: Build project for development environment
+      - name: Build Project for Dev
+        run: npm run build:dev
+        env:
+          NODE_ENV: development
+
+      # Step 5: Deploy to Firebase Hosting (Development)
+      - name: Deploy to Firebase Hosting (Dev)
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          npm install -g firebase-tools
+          echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/serviceAccountKey.json
+          export GOOGLE_APPLICATION_CREDENTIALS="/tmp/serviceAccountKey.json"
+          firebase deploy --only hosting --project ableclub-monitor-dev

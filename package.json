@@ -1,5 +1,5 @@
 {
-  "name": "Clean Mind",
+  "name": "ableclub_monitor_FE",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -22,8 +22,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "vite --mode development",
-    "build": "vite build --mode production"
+    "dev": "vite",
+    "build:dev": "vite build --mode development",
+    "build:prod": "vite build --mode production",
+    "preview": "vite preview"
   },
   "eslintConfig": {
     "extends": [

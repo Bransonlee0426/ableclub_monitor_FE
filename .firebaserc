@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "ableclub-monitor-fe",
+    "dev": "ableclub-monitor-dev",
+    "prod": "ableclub-monitor-prod"
+  },
+  "targets": {},
+  "etags": {}
+}
