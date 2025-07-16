@@ -45,7 +45,7 @@ jobs:
       # Step 5: Deploy to Firebase Hosting (Development)
       - name: Deploy to Firebase Hosting (Dev)
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
         run: |
           npm install -g firebase-tools
           echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/serviceAccountKey.json
