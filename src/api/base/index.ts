@@ -1,4 +1,4 @@
-import request from '../request';
+import apiClient from '../apiClient';
 
 export interface BaseItem {
   id: string | number;
@@ -11,7 +11,7 @@ export interface BaseListResponse {
 }
 
 export const fetchBaseDataList = (params?: Record<string, any>): Promise<BaseListResponse> => {
-  return request({
+  return apiClient({
     url: '/base',
     method: 'get',
     params,

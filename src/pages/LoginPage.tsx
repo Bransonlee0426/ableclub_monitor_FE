@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { checkUserStatus, loginOrRegister } from '../api/auth';
-import styles from './LoginPage.module.scss';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
   
   // Component states as per specification
   const [username, setUsername] = useState<string>('');
@@ -17,56 +18,70 @@ const LoginPage: React.FC = () => {
   const [apiErrorMessage, setApiErrorMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
 
-  const debounceRef = useRef<number | null>(null);
-
-  // Debounce logic for username input
+  // Auto-redirect logic for authenticated users
   useEffect(() => {
-    if (username.trim()) {
-      // Clear existing timeout
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
+    // If user is already authenticated, redirect to home page
+    if (isAuthenticated) {
+      navigate('/home', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
-      // Set new timeout for 300ms
-      debounceRef.current = setTimeout(async () => {
-        setIsCheckingStatus(true);
-        try {
-          const response = await checkUserStatus({ username });
-          
-          // API success: set invite code field state based on isRegistered
-          setIsInviteCodeDisabled(response.isRegistered);
-        } catch (error) {
-          // API failure: use tolerant strategy (enable invite code field)
-          setIsInviteCodeDisabled(false);
-          console.error('Check status API error:', error);
-        } finally {
-          setIsCheckingStatus(false);
-        }
-      }, 300);
+  // If user is authenticated, don't render the login form to avoid flash
+  if (isAuthenticated) {
+    return null;
+  }
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUsername(value);
+    
+    // Clear username error if user starts typing
+    if (value.trim() && usernameError) {
+      setUsernameError('');
+    }
+  };
+
+  const handleUsernameBlur = async () => {
+    if (username.trim()) {
+      setIsCheckingStatus(true);
+      try {
+        const response = await checkUserStatus({ username });
+        
+        // API success: set invite code field state based on data.isRegistered
+        // If isRegistered key doesn't exist or isRegistered === false, enable input
+        const isRegistered = response.data?.isRegistered === true;
+        setIsInviteCodeDisabled(isRegistered);
+      } catch (error) {
+        // API failure: use tolerant strategy (enable invite code field)
+        setIsInviteCodeDisabled(false);
+        console.error('Check status API error:', error);
+      } finally {
+        setIsCheckingStatus(false);
+      }
     } else {
       // Reset to initial state when username is empty
       setIsInviteCodeDisabled(true);
     }
-
-    // Cleanup function
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [username]);
-
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
+    const value = e.target.value;
+    setPassword(value);
+    
+    // Clear password error if user starts typing
+    if (value.trim() && passwordError) {
+      setPasswordError('');
+    }
   };
 
   const handleInviteCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInviteCode(e.target.value);
+  };
+
+  const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRememberMe(e.target.checked);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -110,15 +125,15 @@ const LoginPage: React.FC = () => {
       });
 
       // Success: store token and redirect
-      if (response.success && response.token?.access_token) {
-        // Store token in localStorage (you can modify this to use HttpOnly cookies if preferred)
-        localStorage.setItem('access_token', response.token.access_token);
+      if (response.success && response.data?.access_token) {
+        login(response.data?.access_token, rememberMe);
         
         // Navigate to home page
         navigate('/home');
       }
     } catch (error: any) {
       // Failure: display API error message
+      // Handle unified API error format
       const errorMessage = error?.response?.data?.message || error?.message || '登入失敗，請稍後再試';
       setApiErrorMessage(errorMessage);
     } finally {
@@ -137,7 +152,12 @@ const LoginPage: React.FC = () => {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
+          <form 
+            onSubmit={handleLogin} 
+            className="space-y-3 sm:space-y-4"
+            autoComplete="on"
+            name="loginForm"
+          >
             {/* Account Field */}
             <div className="form-control">
               <label className="label pb-1 sm:pb-2">
@@ -145,10 +165,13 @@ const LoginPage: React.FC = () => {
               </label>
               <input
                 type="text"
+                name="username"
                 placeholder="請輸入您的帳號"
                 className="input input-bordered w-full h-12 sm:h-12 text-base"
                 value={username}
                 onChange={handleUsernameChange}
+                onBlur={handleUsernameBlur}
+                autoComplete="username"
               />
               {/* Username error message */}
               {usernameError && (
@@ -164,10 +187,12 @@ const LoginPage: React.FC = () => {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
                   placeholder="請輸入您的密碼"
                   className="input input-bordered w-full h-12 sm:h-12 pr-12 text-base"
                   value={password}
                   onChange={handlePasswordChange}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -201,12 +226,27 @@ const LoginPage: React.FC = () => {
               </label>
               <input
                 type="text"
+                name="inviteCode"
                 placeholder="請輸入邀請碼"
                 className={`input input-bordered w-full h-12 sm:h-12 text-base ${isInviteCodeDisabled ? 'input-disabled bg-base-300' : ''}`}
                 value={inviteCode}
                 onChange={handleInviteCodeChange}
                 disabled={isInviteCodeDisabled}
+                autoComplete="off"
               />
+            </div>
+
+            {/* Remember Me Checkbox - 記住我選項 */}
+            <div className="form-control">
+              <label className="cursor-pointer label justify-start gap-2 py-2">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-primary"
+                  checked={rememberMe}
+                  onChange={handleRememberMeChange}
+                />
+                <span className="label-text text-sm sm:text-base">保持登入狀態</span>
+              </label>
             </div>
 
             {/* API Error Message */}

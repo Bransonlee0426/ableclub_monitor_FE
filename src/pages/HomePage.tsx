@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState('keywords');
   const [notificationType, setNotificationType] = useState('email');
   const [email, setEmail] = useState('');
@@ -42,8 +44,10 @@ const HomePage: React.FC = () => {
   };
 
   const handleLogout = () => {
+    // Use AuthContext to handle logout
+    logout();
     // Navigate back to login page
-    navigate('/');
+    navigate('/login');
   };
 
   return (
