@@ -146,9 +146,9 @@ const LoginPage: React.FC = () => {
       <div className="card w-full max-w-md bg-base-100 shadow-xl mx-2 sm:mx-0">
         <div className="card-body p-4 sm:p-8">
           {/* Login Header */}
-          <div className="text-center mb-4 sm:mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-primary">歡迎登入</h1>
-            <p className="text-sm sm:text-base text-base-content/70 mt-1 sm:mt-2">請填寫您的登入資訊</p>
+          <div className="relative text-center mb-4 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary">AbleClub Monitor</h1>
+            <span className="absolute bottom-0 right-0 badge badge-secondary badge-sm">BETA</span>
           </div>
 
           {/* Login Form */}
