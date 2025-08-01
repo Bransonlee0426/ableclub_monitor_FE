@@ -261,9 +261,9 @@ const LoginPage: React.FC = () => {
               <button 
                 type="submit" 
                 className="btn btn-primary w-full h-12 sm:h-12 text-base sm:text-lg font-medium touch-manipulation"
-                disabled={isLoading}
+                disabled={isLoading || isCheckingStatus}
               >
-                {isLoading ? (
+                {(isLoading || isCheckingStatus) ? (
                   <span className="loading loading-ring loading-md"></span>
                 ) : (
                   '登入'
