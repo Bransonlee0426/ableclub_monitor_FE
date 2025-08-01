@@ -331,13 +331,29 @@ const HomePage: React.FC = () => {
                 <div className="text-left">
                   <p className="text-xs text-base-content/50">
                     最後更新時間: {
-                      new Date(updatedAt).toLocaleString('sv-SE', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      }).replace('T', ' ').substring(0, 16).replace(/-/g, '/')
+                      (() => {
+                        // Convert API format "2025-07-28-13:18" to standard ISO format
+                        const formatApiDate = (apiDate: string) => {
+                          const parts = apiDate.split('-');
+                          if (parts.length === 4) {
+                            const year = parts[0];
+                            const month = parts[1];
+                            const day = parts[2];
+                            const time = parts[3];
+                            return `${year}-${month}-${day}T${time}:00`;
+                          }
+                          return apiDate; // fallback to original format
+                        };
+                        
+                        const standardDate = formatApiDate(updatedAt);
+                        return new Date(standardDate).toLocaleString('sv-SE', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }).replace('T', ' ').substring(0, 16).replace(/-/g, '/');
+                      })()
                     }
                   </p>
                 </div>
