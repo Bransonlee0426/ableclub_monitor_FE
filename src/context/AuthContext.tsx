@@ -36,10 +36,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Verify token with server
           await getUserMe();
           setIsAuthenticated(true);
-        } catch (error) {
-          localStorage.removeItem(TOKEN_KEY);
-          sessionStorage.removeItem(TOKEN_KEY);
-          setIsAuthenticated(false);
+        } catch (error: any) {
+          // Check if error is specifically an authentication error
+          const isAuthError = error?.response?.status === 401 && 
+                             error?.response?.data?.error_code === 'TOKEN_INVALID';
+          
+          if (isAuthError) {
+            // Only clear tokens for authentication errors (expired or invalid tokens)
+            console.log('Token expired or invalid, clearing stored tokens');
+            localStorage.removeItem(TOKEN_KEY);
+            sessionStorage.removeItem(TOKEN_KEY);
+            setIsAuthenticated(false);
+          } else {
+            // For network errors, timeouts, or other non-auth errors, 
+            // assume user is still authenticated and keep the token
+            console.warn('Token verification failed due to network or server error, keeping user logged in:', error?.message);
+            setIsAuthenticated(true);
+          }
         }
       } else {
         setIsAuthenticated(false);

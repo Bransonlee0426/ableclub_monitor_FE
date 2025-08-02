@@ -39,8 +39,11 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     // Handle successful responses
     const res = response.data;
-    if (res.code && res.code !== 0) {
-      return Promise.reject(new Error(res.msg || 'Error'));
+    
+    // Check for error based on backend response format
+    // Backend uses "success" field, not "code"
+    if (res.success === false) {
+      return Promise.reject(new Error(res.message || 'Error'));
     } else {
       return res;
     }
