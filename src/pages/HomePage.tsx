@@ -171,7 +171,7 @@ const HomePage: React.FC = () => {
           checked={activeTab === 'keywords'}
           onChange={() => setActiveTab('keywords')}
         />
-        <div className="tab-content bg-base-100 border-base-300 rounded-box p-6">
+        <div className="tab-content bg-base-100 border-base-300 rounded-md p-6">
           <div className="max-w-lg mx-auto">
             <h2 className="text-xl font-semibold mb-6 text-center">關鍵字提示功能</h2>
             
