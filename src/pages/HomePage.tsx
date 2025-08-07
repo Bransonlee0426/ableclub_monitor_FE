@@ -16,6 +16,7 @@ const HomePage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [alertInfo, setAlertInfo] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
+  const [isComposing, setIsComposing] = useState(false);
 
   // Fetch user notification settings on component mount
   useEffect(() => {
@@ -273,8 +274,10 @@ const HomePage: React.FC = () => {
                       type="text"
                       placeholder="輸入關鍵字"
                       className="input input-bordered flex-1"
+                      onCompositionStart={() => setIsComposing(true)}
+                      onCompositionEnd={() => setIsComposing(false)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === 'Enter' && !isComposing) {
                           e.preventDefault();
                           const target = e.currentTarget;
                           const value = target.value.trim();
