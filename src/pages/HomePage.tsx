@@ -148,8 +148,7 @@ const HomePage: React.FC = () => {
       {/* Header with Logout Button */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-2">儀表板</h1>
-          <p className="text-base-content/70">歡迎使用您的應用程式</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-2">ABLE Club Monitor</h1>
         </div>
         <button 
           className="btn btn-outline btn-error btn-sm"
